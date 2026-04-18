@@ -1,10 +1,9 @@
 ﻿#include "PatternCheckerSuiteModule_AppResolver.h"
 
-#include "AssemblyUtils.h"
-
 const CPatternCheckerSuiteModule_Base::ElementDef CPatternCheckerSuiteModule_AppResolver::ElementDefs[] =
 {
 	{ L"AUPSTS", L"CAppResolverCacheBuilder::_AddUserPinnedShortcutToStart()" },
+	{ L"GCI", L"CAppResolverCacheManager::GetCacheInstance(this->m_cacheManager)" },
 };
 
 CPatternCheckerSuiteModule_AppResolver::CPatternCheckerSuiteModule_AppResolver()
@@ -52,6 +51,36 @@ void CPatternCheckerSuiteModule_AppResolver::CheckPatterns(
 		}
 	}
 	PUBLISH_MATCH_INFO(AddUserPinnedShortcutToStart);
+
+	// CAppResolverCacheManager::GetCacheInstance(this->m_cacheManager)
+	INIT_MATCH_INFO_VARS(GetCacheInstanceFuncAndCacheManagerOffset);
+	if (machineType == IMAGE_FILE_MACHINE_AMD64)
+	{
+		// 05 40 00 80 48 8B 4B ?? E8 ?? ?? ?? ?? 48
+		//                      ^^    ^^^^^^^^^^^
+		// Ref: CAppResolver::GetShortcutForAppID()
+		matchGetCacheInstanceFuncAndCacheManagerOffset = (PBYTE)FindPattern(
+			pFile,
+			dwSize,
+			"\x05\x40\x00\x80\x48\x8B\x4B\x00\xE8\x00\x00\x00\x00\x48",
+			"xxxxxxx?x????x",
+			&numMatchesGetCacheInstanceFuncAndCacheManagerOffset
+		);
+	}
+	else if (machineType == IMAGE_FILE_MACHINE_ARM64)
+	{
+		// 02 AA ?? ?? ?? ?? 1F 20 03 D5 ?? ?? 00 F9 ?? ?? 40 F9 ?? ?? 00 18 ?? ?? ?? ?? ?? 03 00 AA
+		//                                           ^^^^^^^^^^^             ^^^^^^^^^^^
+		// Ref: CAppResolver::GetShortcutForAppID()
+		matchGetCacheInstanceFuncAndCacheManagerOffset = (PBYTE)FindPattern(
+			pFile,
+			dwSize,
+			"\x02\xAA\x00\x00\x00\x00\x1F\x20\x03\xD5\x00\x00\x00\xF9\x00\x00\x40\xF9\x00\x00\x00\x18\x00\x00\x00\x00\x00\x03\x00\xAA",
+			"xx????xxxx??xx??xx??xx?????xxx",
+			&numMatchesGetCacheInstanceFuncAndCacheManagerOffset
+		);
+	}
+	PUBLISH_MATCH_INFO(GetCacheInstanceFuncAndCacheManagerOffset);
 }
 
 bool CPatternCheckerSuiteModule_AppResolver::ShouldIncludeFile(const FileInfo& fileInfo) const
@@ -64,7 +93,7 @@ bool CPatternCheckerSuiteModule_AppResolver::ShouldIncludeFile(const FileInfo& f
 	WORD build = HIWORD(ls);
 	WORD ubr = LOWORD(ls);
 
-	return build >= 22621;
+	return fileInfo.machineType == IMAGE_FILE_MACHINE_ARM64 ? build >= 22000 : build >= 17763;
 }
 
 /*void CPatternCheckerSuiteModule_AppResolver::PostProcess(const FileInfo& fileInfo, std::vector<PatternMatchInfo>* matches)

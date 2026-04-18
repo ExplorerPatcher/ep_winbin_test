@@ -94,8 +94,8 @@ namespace Glue
                     moduleNameWithCanonicalCase: "AppResolver.dll",
                     minVersionsByMachine: new Dictionary<ushort, Version>
                     {
-                        { MachineTypes.AMD64, new Version(10, 0, 22621, 1) },
-                        { MachineTypes.ARM64, new Version(10, 0, 22621, 1) },
+                        { MachineTypes.AMD64, new Version(10, 0, 17763, 1) },
+                        { MachineTypes.ARM64, new Version(10, 0, 22000, 1) },
                     }
                 ),
             };
