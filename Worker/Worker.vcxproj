@@ -100,6 +100,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="PatternCheckerSuiteModule_AppResolver.cpp" />
     <ClCompile Include="PatternCheckerSuiteModule_Explorer.cpp" />
     <ClCompile Include="PatternCheckerSuiteModule_InputSwitch.cpp" />
     <ClCompile Include="PatternCheckerSuiteModule_StartTileData.cpp" />
@@ -110,6 +111,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AssemblyUtils.h" />
+    <ClInclude Include="PatternCheckerSuiteModule_AppResolver.h" />
     <ClInclude Include="PatternCheckerSuiteModule_Base.h" />
     <ClInclude Include="PatternCheckerSuiteModule_Explorer.h" />
     <ClInclude Include="PatternCheckerSuiteModule_InputSwitch.h" />

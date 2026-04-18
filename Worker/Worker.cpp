@@ -17,6 +17,7 @@
 #include <rapidjson/writer.h>
 #include <wil/resource.h>
 
+#include "PatternCheckerSuiteModule_AppResolver.h"
 #include "PatternCheckerSuiteModule_Base.h"
 #include "PatternCheckerSuiteModule_Explorer.h"
 #include "PatternCheckerSuiteModule_InputSwitch.h"
@@ -1076,6 +1077,7 @@ int wmain(int argc, wchar_t* argv[])
 
 	std::unique_ptr<CPatternCheckerSuite> suite = std::make_unique<CPatternCheckerSuite>();
 
+	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_AppResolver>());
 	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_Explorer>());
 	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_InputSwitch>());
 	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_StartTileData>());

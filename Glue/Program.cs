@@ -90,6 +90,14 @@ namespace Glue
                         { MachineTypes.ARM64, new Version(10, 0, 22000, 65) },
                     }
                 ),
+                new DownloadDefinition(
+                    moduleNameWithCanonicalCase: "AppResolver.dll",
+                    minVersionsByMachine: new Dictionary<ushort, Version>
+                    {
+                        { MachineTypes.AMD64, new Version(10, 0, 22621, 1) },
+                        { MachineTypes.ARM64, new Version(10, 0, 22621, 1) },
+                    }
+                ),
             };
 
             string outputRoot = Path.Combine(Directory.GetCurrentDirectory(), "BinaryCache");
