@@ -36,8 +36,10 @@ void CPatternCheckerSuiteModule_AppResolver::CheckPatterns(
 	}
 	else if (machineType == IMAGE_FILE_MACHINE_ARM64)
 	{
+		// Nickel+
 		// 7F 23 03 D5  FD 7B BC A9  F3 53 01 A9  F5 5B 02 A9  F7 1B 00 F9  FD 03 00 91  ?? ?? ?? ??  FF 43 01 D1  F7 03 00 91  30 00 80 92  F0 1A 00 F9  ?? 03 01 AA  ?? 03 02 AA  FF ?? 00 F9
 		// ----------- PACIBSP, don't scan for this because it's everywhere
+		usingPatternAddUserPinnedShortcutToStart = 1;
 		matchAddUserPinnedShortcutToStart = (PBYTE)FindPattern_4_(
 			pFile,
 			dwSize,
@@ -48,6 +50,24 @@ void CPatternCheckerSuiteModule_AppResolver::CheckPatterns(
 		if (matchAddUserPinnedShortcutToStart)
 		{
 			matchAddUserPinnedShortcutToStart -= 4;
+		}
+		else
+		{
+			// Cobalt
+			// 7F 23 03 D5  FD 7B BC A9  F3 53 01 A9  F5 5B 02 A9  F7 1B 00 F9  F9 1F 00 F9  FD 03 00 91  ?? ?? ?? ??  FF 43 01 D1  F7 03 00 91  30 00 80 92  F0 1A 00 F9  ?? 03 01 AA  ?? 03 02 AA  FF ?? 00 F9
+			// ----------- PACIBSP, don't scan for this because it's everywhere
+			usingPatternAddUserPinnedShortcutToStart = 2;
+			matchAddUserPinnedShortcutToStart = (PBYTE)FindPattern_4_(
+				pFile,
+				dwSize,
+				"\xFD\x7B\xBC\xA9\xF3\x53\x01\xA9\xF5\x5B\x02\xA9\xF7\x1B\x00\xF9\xF9\x1F\x00\xF9\xFD\x03\x00\x91\x00\x00\x00\x00\xFF\x43\x01\xD1\xF7\x03\x00\x91\x30\x00\x80\x92\xF0\x1A\x00\xF9\x00\x03\x01\xAA\x00\x03\x02\xAA\xFF\x00\x00\xF9",
+				"xxxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxx?xxx?xxxx?xx",
+				&numMatchesAddUserPinnedShortcutToStart
+			);
+			if (matchAddUserPinnedShortcutToStart)
+			{
+				matchAddUserPinnedShortcutToStart -= 4;
+			}
 		}
 	}
 	PUBLISH_MATCH_INFO(AddUserPinnedShortcutToStart);
