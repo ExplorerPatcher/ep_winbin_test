@@ -2,14 +2,14 @@
 
 #include "PatternCheckerSuiteModule_Base.h"
 
-class CPatternCheckerSuiteModule_Explorer final : public CPatternCheckerSuiteModule_Base
+class CPatternCheckerSuiteModule_InputSwitch final : public CPatternCheckerSuiteModule_Base
 {
 	static const ElementDef ElementDefs[];
 
 public:
-	CPatternCheckerSuiteModule_Explorer();
+	CPatternCheckerSuiteModule_InputSwitch();
 
 	void CheckPatterns(PBYTE pFileRaw, DWORD dwSizeRaw, PBYTE pFile, DWORD dwSize, WORD machineType, std::vector<PatternMatchInfo>* matches) override;
 	bool ShouldIncludeFile(const FileInfo& fileInfo) const override;
-	void PostProcess(const FileInfo& fileInfo, std::vector<PatternMatchInfo>* matches) override;
+	// void PostProcess(const FileInfo& fileInfo, std::vector<PatternMatchInfo>* matches) override;
 };

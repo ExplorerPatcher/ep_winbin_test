@@ -19,6 +19,7 @@
 
 #include "PatternCheckerSuiteModule_Base.h"
 #include "PatternCheckerSuiteModule_Explorer.h"
+#include "PatternCheckerSuiteModule_InputSwitch.h"
 #include "PatternCheckerSuiteModule_StartTileData.h"
 #include "PatternCheckerSuiteModule_TwinUIPCShell.h"
 #include "PatternCheckerSuiteModule_UxTheme.h"
@@ -1074,10 +1075,11 @@ int wmain(int argc, wchar_t* argv[])
 
 	std::unique_ptr<CPatternCheckerSuite> suite = std::make_unique<CPatternCheckerSuite>();
 
+	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_Explorer>());
+	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_InputSwitch>());
 	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_StartTileData>());
 	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_TwinUIPCShell>());
 	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_UxTheme>());
-	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_Explorer>());
 
 	CLI::App app("ep_winbin_test_worker");
 

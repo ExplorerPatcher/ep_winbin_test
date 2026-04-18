@@ -889,16 +889,16 @@ inline const std::span<const CPatternCheckerSuiteModule_Base::ElementDef>& CPatt
 inline bool CPatternCheckerSuiteModule_Base::ShouldIncludeFile(const FileInfo& fileInfo) const
 {
 	/*if (true) // REMOVEME
-		{
-			DWORD ls = (fileInfo.fileVersion >> 0) & 0xFFFFFFFF;
-			DWORD ms = (fileInfo.fileVersion >> 32) & 0xFFFFFFFF;
-			WORD build = HIWORD(ls);
-			WORD ubr = LOWORD(ls);
+	{
+		DWORD ls = (fileInfo.fileVersion >> 0) & 0xFFFFFFFF;
+		DWORD ms = (fileInfo.fileVersion >> 32) & 0xFFFFFFFF;
+		WORD build = HIWORD(ls);
+		WORD ubr = LOWORD(ls);
 
-			bool b = build == 22621 && ubr == 3880;
-			if (!b)
-				return false;
-		}*/
+		bool b = build == 22621 && ubr == 3880;
+		if (!b)
+			return false;
+	}*/
 	return fileInfo.machineType == IMAGE_FILE_MACHINE_AMD64 || fileInfo.machineType == IMAGE_FILE_MACHINE_ARM64;
 }
 

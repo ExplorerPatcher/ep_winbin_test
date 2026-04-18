@@ -27,7 +27,7 @@
     <TargetName>ep_winbin_test_worker</TargetName>
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)obj\$(Configuration)\$(Platform)\</IntDir>
-    <LocalDebuggerCommandArguments>full --dir "C:\Users\satri\Documents\RE x64" --dir "C:\Users\satri\Documents\RE ARM64"</LocalDebuggerCommandArguments>
+    <!--<LocalDebuggerCommandArguments>full &#45;&#45;dir "C:\Users\satri\Documents\RE x64" &#45;&#45;dir "C:\Users\satri\Documents\RE ARM64" &#45;&#45;result-base results</LocalDebuggerCommandArguments>-->
     <LocalDebuggerWorkingDirectory>$(SolutionDir)Run\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -101,6 +101,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="PatternCheckerSuiteModule_Explorer.cpp" />
+    <ClCompile Include="PatternCheckerSuiteModule_InputSwitch.cpp" />
     <ClCompile Include="PatternCheckerSuiteModule_StartTileData.cpp" />
     <ClCompile Include="PatternCheckerSuiteModule_TwinUIPCShell.cpp" />
     <ClCompile Include="PatternCheckerSuiteModule_UxTheme.cpp" />
@@ -110,6 +111,7 @@
     <ClInclude Include="AssemblyUtils.h" />
     <ClInclude Include="PatternCheckerSuiteModule_Base.h" />
     <ClInclude Include="PatternCheckerSuiteModule_Explorer.h" />
+    <ClInclude Include="PatternCheckerSuiteModule_InputSwitch.h" />
     <ClInclude Include="PatternCheckerSuiteModule_StartTileData.h" />
     <ClInclude Include="PatternCheckerSuiteModule_TwinUIPCShell.h" />
     <ClInclude Include="PatternCheckerSuiteModule_UxTheme.h" />
