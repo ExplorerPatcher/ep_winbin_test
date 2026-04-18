@@ -275,6 +275,7 @@ FORCEINLINE bool _MaskCompareBitLevel_QWORD(PBYTE pbBuffer, const BYTE* pbPatter
 	return (buffer & mask) == pattern;
 }
 
+#if defined(_M_X64)
 FORCEINLINE bool _MaskCompareBitLevel_SSE2_16(PBYTE pbBuffer, const BYTE* pbPattern, const BYTE* pbMask)
 {
 	__m128i buffer = _mm_loadu_si128((const __m128i*)pbBuffer);
@@ -283,6 +284,16 @@ FORCEINLINE bool _MaskCompareBitLevel_SSE2_16(PBYTE pbBuffer, const BYTE* pbPatt
 	__m128i eq = _mm_cmpeq_epi8(_mm_and_si128(buffer, mask), pattern);
 	return _mm_movemask_epi8(eq) == 0xFFFF;
 }
+#elif defined(_M_ARM64)
+FORCEINLINE bool _MaskCompareBitLevel_NEON_16(PBYTE pbBuffer, const BYTE* pbPattern, const BYTE* pbMask)
+{
+	uint8x16_t buffer = vld1q_u8(pbBuffer);
+	uint8x16_t pattern = vld1q_u8(pbPattern);
+	uint8x16_t mask = vld1q_u8(pbMask);
+	uint8x16_t eq = vceqq_u8(vandq_u8(buffer, mask), pattern);
+	return vminvq_u8(eq) == 0xFF;
+}
+#endif
 
 template <size_t cbPattern>
 FORCEINLINE BOOL _MaskCompareBitLevel_Tailored(PBYTE pbBuffer, const BYTE* pbPattern, const BYTE* pbMask)
@@ -291,11 +302,19 @@ FORCEINLINE BOOL _MaskCompareBitLevel_Tailored(PBYTE pbBuffer, const BYTE* pbPat
 	{
 		return TRUE;
 	}
+#if defined(_M_X64)
 	else if constexpr (cbPattern >= 16)
 	{
 		return _MaskCompareBitLevel_SSE2_16(pbBuffer, pbPattern, pbMask)
 			&& _MaskCompareBitLevel_Tailored<cbPattern - 16>(pbBuffer + 16, pbPattern + 16, pbMask + 16);
 	}
+#elif defined(_M_ARM64)
+	/*else if constexpr (cbPattern >= 16)
+	{
+		return _MaskCompareBitLevel_NEON_16(pbBuffer, pbPattern, pbMask)
+			&& _MaskCompareBitLevel_Tailored<cbPattern - 16>(pbBuffer + 16, pbPattern + 16, pbMask + 16);
+	}*/ // Worse performance
+#endif
 #ifdef _WIN64
 	else if constexpr (cbPattern >= 8)
 	{
