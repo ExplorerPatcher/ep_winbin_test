@@ -23,6 +23,7 @@
 #include "PatternCheckerSuiteModule_StartTileData.h"
 #include "PatternCheckerSuiteModule_TwinUIPCShell.h"
 #include "PatternCheckerSuiteModule_UxTheme.h"
+#include "PatternCheckerSuiteModule_WindowsUIXaml.h"
 
 inline UINT_PTR RVAToFileOffset(PBYTE pBase, DWORD fileSize, UINT_PTR rva)
 {
@@ -1080,6 +1081,7 @@ int wmain(int argc, wchar_t* argv[])
 	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_StartTileData>());
 	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_TwinUIPCShell>());
 	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_UxTheme>());
+	suite->RegisterModule(std::make_shared<CPatternCheckerSuiteModule_WindowsUIXaml>());
 
 	CLI::App app("ep_winbin_test_worker");
 

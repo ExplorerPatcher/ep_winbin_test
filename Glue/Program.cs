@@ -82,6 +82,14 @@ namespace Glue
                         { MachineTypes.ARM64, new Version(10, 0, 22000, 65) },
                     }
                 ),
+                new DownloadDefinition(
+                    moduleNameWithCanonicalCase: "Windows.UI.Xaml.dll",
+                    minVersionsByMachine: new Dictionary<ushort, Version>
+                    {
+                        { MachineTypes.AMD64, new Version(10, 0, 19041, 1) },
+                        { MachineTypes.ARM64, new Version(10, 0, 22000, 65) },
+                    }
+                ),
             };
 
             string outputRoot = Path.Combine(Directory.GetCurrentDirectory(), "BinaryCache");

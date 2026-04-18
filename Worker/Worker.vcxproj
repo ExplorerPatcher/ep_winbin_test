@@ -105,6 +105,7 @@
     <ClCompile Include="PatternCheckerSuiteModule_StartTileData.cpp" />
     <ClCompile Include="PatternCheckerSuiteModule_TwinUIPCShell.cpp" />
     <ClCompile Include="PatternCheckerSuiteModule_UxTheme.cpp" />
+    <ClCompile Include="PatternCheckerSuiteModule_WindowsUIXaml.cpp" />
     <ClCompile Include="Worker.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +116,7 @@
     <ClInclude Include="PatternCheckerSuiteModule_StartTileData.h" />
     <ClInclude Include="PatternCheckerSuiteModule_TwinUIPCShell.h" />
     <ClInclude Include="PatternCheckerSuiteModule_UxTheme.h" />
+    <ClInclude Include="PatternCheckerSuiteModule_WindowsUIXaml.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
