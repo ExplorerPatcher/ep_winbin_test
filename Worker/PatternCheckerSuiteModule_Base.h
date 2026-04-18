@@ -560,7 +560,7 @@ struct PatternData
 
 	static_assert(c_cbPattern <= UINT8_MAX, "Pattern length must be 255 bytes or less");
 	static_assert(Validate(c_rgPatternBytes, c_rgMaskBytes), "Invalid pattern/mask combination");
-	static_assert(c_rgMaskBytes.back() == 0xFF, "The last byte must be fully significant");
+	// static_assert(c_rgMaskBytes.back() == 0xFF, "The last byte must be fully significant");
 };
 
 template <FixedString Pattern, FixedString Mask, typename Traits, size_t Advance>

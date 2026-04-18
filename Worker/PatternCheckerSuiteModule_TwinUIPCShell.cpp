@@ -703,9 +703,9 @@ void CPatternCheckerSuiteModule_TwinUIPCShell::CheckPatterns_SMA(
 	}
 	else
 	{
-		// * Pattern for Nickel
+		// * Pattern for Cobalt and Nickel
 		//   ```
-		//   69 A2 03 A9 ?? ?? 00 ?? 08 ?? ?? 91 ?? ?? 00 ?? 29 ?? ?? 91 68 32 00 F9
+		//   69 A2 03 A9 ?? ?? 00 ?? 08 ?? ?? 91 ?? ?? 00 ?? 29 ?? ?? 91 ?? 32 00 F9 60 ?? ?? 91 ?? 26 00 F9 ?? ?? ?? ?? 1F 20 03 D5
 		//               ^^^^^^^^^^^+^^^^^^^^^^^
 		//   ```
 		// Ref: CStartExperienceManager::CStartExperienceManager()
@@ -713,8 +713,8 @@ void CPatternCheckerSuiteModule_TwinUIPCShell::CheckPatterns_SMA(
 		matchVtable = (PBYTE)FindPattern_4_(
 			pFile,
 			dwSize,
-			"\x69\xA2\x03\xA9\x00\x00\x00\x00\x08\x00\x00\x91\x00\x00\x00\x00\x29\x00\x00\x91\x68\x32\x00\xF9",
-			"xxxx??x?x??x??x?x??xxxxx",
+			"\x69\xA2\x03\xA9\x00\x00\x00\x00\x08\x00\x00\x91\x00\x00\x00\x00\x29\x00\x00\x91\x00\x32\x00\xF9\x60\x00\x00\x91\x00\x26\x00\xF9\x00\x00\x00\x00\x1F\x20\x03\xD5",
+			"xxxx??x?x??x??x?x??x?xxxx??x?xxx????xxxx",
 			&numMatchesVtable
 		);
 		if (matchVtable)

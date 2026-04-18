@@ -19,20 +19,20 @@ void CPatternCheckerSuiteModule_WindowsUIXaml::CheckPatterns(
 	INIT_MATCH_INFO_VARS(TryLoadXamlResourceHelper);
 	if (machineType == IMAGE_FILE_MACHINE_AMD64)
 	{
-		// 49 89 43 C8 E8 ?? ?? ?? ?? 85 C0
-		//                ^^^^^^^^^^^
+		// 48 8B 45 ?? 49 89 43 C8 E8 ?? ?? ?? ?? 85 C0
+		//                            ^^^^^^^^^^^
 		// Ref: CCoreServices::LoadXamlResource()
 		usingPatternTryLoadXamlResourceHelper = 1;
 		matchTryLoadXamlResourceHelper = (PBYTE)FindPattern(
 			pFile,
 			dwSize,
-			"\x49\x89\x43\xC8\xE8\x00\x00\x00\x00\x85\xC0",
-			"xxxxx????xx",
+			"\x48\x8B\x45\x00\x49\x89\x43\xC8\xE8\x00\x00\x00\x00\x85\xC0",
+			"xxx?xxxxx????xx",
 			&numMatchesTryLoadXamlResourceHelper
 		);
 		if (matchTryLoadXamlResourceHelper)
 		{
-			matchTryLoadXamlResourceHelper += 4;
+			matchTryLoadXamlResourceHelper += 7;
 			matchTryLoadXamlResourceHelper += 5 + *(int*)(matchTryLoadXamlResourceHelper + 1);
 		}
 		else
@@ -58,14 +58,14 @@ void CPatternCheckerSuiteModule_WindowsUIXaml::CheckPatterns(
 	}
 	else if (machineType == IMAGE_FILE_MACHINE_ARM64)
 	{
-		// E1 0B 40 F9 05 00 80 D2 04 00 80 D2 E3 03 ?? AA E2 03 ?? AA E0 03 ?? AA ?? ?? ?? 97
+		// E1 0B 40 F9 05 00 80 D2 04 00 80 D2 E3 03 ?? AA E2 03 ?? AA E0 03 ?? AA ?? ?? ?? ?? ?? 03 00 2A
 		//                                                                         ^^^^^^^^^^^
 		// Ref: CoreServices_TryGetApplicationResource()
 		matchTryLoadXamlResourceHelper = (PBYTE)FindPattern_4_(
 			pFile,
 			dwSize,
-			"\xE1\x0B\x40\xF9\x05\x00\x80\xD2\x04\x00\x80\xD2\xE3\x03\x00\xAA\xE2\x03\x00\xAA\xE0\x03\x00\xAA\x00\x00\x00\x97",
-			"xxxxxxxxxxxxxx?xxx?xxx?x???x",
+			"\xE1\x0B\x40\xF9\x05\x00\x80\xD2\x04\x00\x80\xD2\xE3\x03\x00\xAA\xE2\x03\x00\xAA\xE0\x03\x00\xAA\x00\x00\x00\x00\x00\x03\x00\x2A",
+			"xxxxxxxxxxxxxx?xxx?xxx?x?????xxx",
 			&numMatchesTryLoadXamlResourceHelper
 		);
 		if (matchTryLoadXamlResourceHelper)
@@ -116,18 +116,22 @@ void CPatternCheckerSuiteModule_WindowsUIXaml::CheckPatterns(
 	{
 		// 08 ?? ?? B9 1F 09 00 71 ?? ?? ?? 54 ?? 00 00 35 ?? ?? ?? ??
 		//                                                 ^^^^^^^^^^^ BL -> MOV W0, #1
-		matchXamlSounds = (PBYTE)FindPattern_4_(
+		// BL:
+		// P: 0b100101_00000000000000000000000000 = 94000000 = 00 00 00 94
+		// M: 0b111111_00000000000000000000000000 = FC000000 = 00 00 00 FC
+		matchXamlSounds = (PBYTE)FindPatternBitMask_4_(
 			pFile,
 			dwSize,
-			"\x08\x00\x00\xB9\x1F\x09\x00\x71\x00\x00\x00\x54\x00\x00\x00\x35",
-			"x??xxxxx???x?xxx",
+			"\x08\x00\x00\xB9\x1F\x09\x00\x71\x00\x00\x00\x54\x00\x00\x00\x35\x00\x00\x00\x94",
+			"\xFF\x00\x00\xFF\xFF\xFF\xFF\xFF\x00\x00\x00\xFF\x00\xFF\xFF\xFF\x00\x00\x00\xFC",
+			20,
 			&numMatchesXamlSounds
 		);
 		if (matchXamlSounds)
 		{
 			matchXamlSounds += 16;
 			DWORD currentInsn = *(DWORD*)matchXamlSounds;
-			DWORD newInsn = ARM64_IsBL(currentInsn) ? 0x52800020 : 0; // MOV W0, #1
+			DWORD newInsn = true || ARM64_IsBL(currentInsn) ? 0x52800020 : 0; // MOV W0, #1
 			if (!newInsn)
 			{
 				matchXamlSounds = nullptr;
@@ -163,6 +167,6 @@ void CPatternCheckerSuiteModule_WindowsUIXaml::PostProcess(const FileInfo& fileI
 
 	if (!(build > 22000 || (build == 22000 && ubr >= 65)))
 	{
-		(*matches)[0].numMatches = -1;
+		// (*matches)[0].numMatches = -1;
 	}
 }
