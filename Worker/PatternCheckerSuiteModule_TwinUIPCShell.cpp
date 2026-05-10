@@ -1531,8 +1531,8 @@ void CPatternCheckerSuiteModule_TwinUIPCShell::CheckPatterns_JVP(
 			if (!matchOffsetRcWorkArea)
 			{
 				// With Feature_TaskbarJumplistOnHover (48980211)
-				// 22 01 03 32 67 32 07 91
-				//             ^^^^^^^^^^^
+				// 61 3A 40 F9 22 01 03 32 67 32 07 91
+				// -----------             ^^^^^^^^^^^
 				//   ADD             X7, X??, #0x???
 				//     P: 10010001_00_000000000000_00000_00111 = 91000007 = 07 00 00 91
 				//     M: 11111111_11_000000000000_00000_11111 = FFC0001F = 1F 00 C0 FF
@@ -1541,9 +1541,9 @@ void CPatternCheckerSuiteModule_TwinUIPCShell::CheckPatterns_JVP(
 				matchOffsetRcWorkArea = (PBYTE)FindPatternBitMask_4_(
 					matchOffsetTrayStuckPlace + 38,
 					128,
-					"\x22\x01\x03\x32\x07\x00\x00\x91",
-					"\xFF\xFF\xFF\xFF\x1F\x00\xC0\xFF",
-					8,
+					"\x61\x3A\x40\xF9\x22\x01\x03\x32\x07\x00\x00\x91",
+					"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x1F\x00\xC0\xFF",
+					12,
 					&numMatchesOffsetRcWorkArea
 				);
 			}
