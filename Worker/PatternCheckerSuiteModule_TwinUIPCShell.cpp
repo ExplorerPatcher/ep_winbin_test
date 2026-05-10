@@ -1444,14 +1444,14 @@ void CPatternCheckerSuiteModule_TwinUIPCShell::CheckPatterns_JVP(
 	INIT_MATCH_INFO_VARS(OffsetTrayStuckPlace);
 	if (machineType == IMAGE_FILE_MACHINE_AMD64)
 	{
-		// 8B 8B B0 01 00 00 BF 5C 00 00 00 85 C9
+		// 8B 8B ?? ?? 00 00 BF 5C 00 00 00 85 C9
 		//       ^^^^^^^^^^^
 		// Ref: CJumpViewExperienceManager::OnViewUncloaking()
 		matchOffsetTrayStuckPlace = (PBYTE)FindPattern(
 			pFile,
 			dwSize,
-			"\x8B\x8B\xB0\x01\x00\x00\xBF\x5C\x00\x00\x00\x85\xC9",
-			"xxxxxxxxxxxxx",
+			"\x8B\x8B\x00\x00\x00\x00\xBF\x5C\x00\x00\x00\x85\xC9",
+			"xx??xxxxxxxxx",
 			&numMatchesOffsetTrayStuckPlace
 		);
 	}
@@ -1515,29 +1515,35 @@ void CPatternCheckerSuiteModule_TwinUIPCShell::CheckPatterns_JVP(
 			// Without Feature_TaskbarJumplistOnHover (48980211)
 			// 01 38 40 F9 07 00 07 91
 			// ----------- ^^^^^^^^^^^
-			// If this matches then the offset of m_rcWorkArea is +0x200
+			//   ADD             X7, X??, #0x???
+			//     P: 10010001_00_000000000000_00000_00111 = 91000007 = 07 00 00 91
+			//     M: 11111111_11_000000000000_00000_11111 = FFC0001F = 1F 00 C0 FF
 			// Ref: CJumpViewExperienceManager::OnViewCloaking()
 			usingPatternOffsetRcWorkArea = 1;
-			matchOffsetRcWorkArea = (PBYTE)FindPattern_4_(
+			matchOffsetRcWorkArea = (PBYTE)FindPatternBitMask_4_(
 				matchOffsetTrayStuckPlace + 38,
 				128,
-				"\x01\x38\x40\xF9\x07\x00\x07\x91",
-				"xxxxxxxx",
+				"\x01\x38\x40\xF9\x07\x00\x00\x91",
+				"\xFF\xFF\xFF\xFF\x1F\x00\xC0\xFF",
+				8,
 				&numMatchesOffsetRcWorkArea
 			);
 			if (!matchOffsetRcWorkArea)
 			{
 				// With Feature_TaskbarJumplistOnHover (48980211)
-																// 22 01 03 32 67 32 07 91
+				// 22 01 03 32 67 32 07 91
 				//             ^^^^^^^^^^^
-				// If this matches then the offset of m_rcWorkArea is +0x20C
+				//   ADD             X7, X??, #0x???
+				//     P: 10010001_00_000000000000_00000_00111 = 91000007 = 07 00 00 91
+				//     M: 11111111_11_000000000000_00000_11111 = FFC0001F = 1F 00 C0 FF
 				// Ref: CJumpViewExperienceManager::OnViewCloaking()
 				usingPatternOffsetRcWorkArea = 2;
-				matchOffsetRcWorkArea = (PBYTE)FindPattern_4_(
+				matchOffsetRcWorkArea = (PBYTE)FindPatternBitMask_4_(
 					matchOffsetTrayStuckPlace + 38,
 					128,
-					"\x22\x01\x03\x32\x67\x32\x07\x91",
-					"xxxxxxxx",
+					"\x22\x01\x03\x32\x07\x00\x00\x91",
+					"\xFF\xFF\xFF\xFF\x1F\x00\xC0\xFF",
+					8,
 					&numMatchesOffsetRcWorkArea
 				);
 			}
