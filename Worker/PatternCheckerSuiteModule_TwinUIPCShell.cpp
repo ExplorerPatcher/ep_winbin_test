@@ -329,7 +329,8 @@ void CPatternCheckerSuiteModule_TwinUIPCShell::CheckPatterns_Various(
 	if (machineType == IMAGE_FILE_MACHINE_AMD64)
 	{
 		// 48 8B 49 08 E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B 89
-		//             ^^^^^^^^^^^
+		//                ^^^^^^^^^^^
+		usingPatternContextMenuWndProc = 1;
 		matchContextMenuWndProc = (PBYTE)FindPattern(
 			pFile, dwSize,
 			"\x48\x8B\x49\x08\xE8\x00\x00\x00\x00\xE9\x00\x00\x00\x00\x48\x8B\x89",
@@ -340,6 +341,23 @@ void CPatternCheckerSuiteModule_TwinUIPCShell::CheckPatterns_Various(
 		{
 			matchContextMenuWndProc += 4;
 			matchContextMenuWndProc = matchContextMenuWndProc + 5 + *(int*)(matchContextMenuWndProc + 1);
+		}
+		else
+		{
+			// 48 8B 49 08 E8 ?? ?? ?? ?? 44 8A ?? E9 ?? ?? ?? ?? 48 8B 89
+			//                ^^^^^^^^^^^
+			usingPatternContextMenuWndProc = 2;
+			matchContextMenuWndProc = (PBYTE)FindPattern(
+				pFile, dwSize,
+				"\x48\x8B\x49\x08\xE8\x00\x00\x00\x00\x44\x8A\x00\xE9\x00\x00\x00\x00\x48\x8B\x89",
+				"xxxxx????xx?x????xxx",
+				&numMatchesContextMenuWndProc
+			);
+			if (matchContextMenuWndProc)
+			{
+				matchContextMenuWndProc += 4;
+				matchContextMenuWndProc = matchContextMenuWndProc + 5 + *(int*)(matchContextMenuWndProc + 1);
+			}
 		}
 	}
 	else
