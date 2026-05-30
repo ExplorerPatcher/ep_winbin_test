@@ -1394,9 +1394,10 @@ void CPatternCheckerSuiteModule_TwinUIPCShell::CheckPatterns_SMA(
 		//     22000.2899 0011100100_001010001011_10101_11011
 		//     22621.1918 0011100100_001010100011_10011_11011
 		//     26100.5551 0011100100_001011010011_10100_11010
+		//     28000.2149 0011100100_001011010011_11001_10100
 		//     29553.1000 0011100100_001011010011_10101_10100
 		//     P:         0011100100_001010000011_10000_10000 = 390A0E10 = 10 0E 0A 39
-		//     M:         1111111111_111110000111_11000_10000 = FFFE1F10 = 10 1F FE FF
+		//     M:         1111111111_111110000111_10000_10000 = FFFE1E10 = 10 1E FE FF
 		// Nop if followed by a Hide() call
 		//   E1 03 ?? 2A ?? ?? 04 91 ?? ?? ?? ?? ?? 03 00 2A
 		// Perform on exactly two matches
@@ -1406,7 +1407,7 @@ void CPatternCheckerSuiteModule_TwinUIPCShell::CheckPatterns_SMA(
 				pBegin,
 				cbSearch,
 				"\x60\x00\x80\x52\x10\x0E\x0A\x39",
-				"\xE0\xFF\xFF\xFF\x10\x1F\xFE\xFF",
+				"\xE0\xFF\xFF\xFF\x10\x1E\xFE\xFF",
 				8,
 				outNumMatches
 			);
