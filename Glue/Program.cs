@@ -54,7 +54,7 @@ namespace Glue
                     moduleNameWithCanonicalCase: "StartTileData.dll",
                     minVersionsByMachine: new Dictionary<ushort, Version>
                     {
-                        { MachineTypes.AMD64, new Version(10, 0, 22000, 65) },
+                        { MachineTypes.AMD64, new Version(10, 0, 16299, 15) },
                         { MachineTypes.ARM64, new Version(10, 0, 22000, 65) },
                     }
                 ),

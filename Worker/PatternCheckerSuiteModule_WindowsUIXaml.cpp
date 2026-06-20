@@ -32,7 +32,7 @@ void CPatternCheckerSuiteModule_WindowsUIXaml::CheckPatterns(
 		);
 		if (matchTryLoadXamlResourceHelper)
 		{
-			matchTryLoadXamlResourceHelper += 7;
+			matchTryLoadXamlResourceHelper += 8;
 			matchTryLoadXamlResourceHelper += 5 + *(int*)(matchTryLoadXamlResourceHelper + 1);
 		}
 		else

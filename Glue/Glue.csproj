@@ -14,8 +14,8 @@
         <FileAlignment>512</FileAlignment>
         <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
         <TargetName>ep_winbin_test_glue</TargetName>
-        <OutDir>$(SolutionDir)bin\$(Configuration)\x64\</OutDir>
-        <IntDir>$(SolutionDir)obj\$(Configuration)\x64\</IntDir>
+        <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
+        <IntDir>$(SolutionDir)obj\$(Configuration)\$(Platform)\</IntDir>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
         <PlatformTarget>x64</PlatformTarget>
