@@ -11,6 +11,7 @@ const CPatternCheckerSuiteModule_Base::ElementDef CPatternCheckerSuiteModule_Sta
 	{ L"MS_LRI", L"MakeShared_LayoutRootInternal" },
 	{ L"MAIOT_W8LMPP", L"MakeAndInitializeOrThrow_Win8LayoutMigrationPostProcessor" },
 	{ L"LATA1", L"LogAllTilesActivity_Dtor" },
+	{ L"FCTEFC", L"FindCollectionTypesEntryForCollection" },
 };
 
 CPatternCheckerSuiteModule_StartTileData::CPatternCheckerSuiteModule_StartTileData()
@@ -644,6 +645,108 @@ void CPatternCheckerSuiteModule_StartTileData::CheckPatterns(PBYTE pFileRaw, DWO
 		}
 	}
 	PUBLISH_MATCH_INFO(LogAllTilesActivity_Dtor);
+
+	// ctc::FindCollectionTypesEntryForCollection()
+	// Call with L"Start.TileGrid" to get ctc::Create_StartTileGridCollectionInitializer() & ctc::Create_StartTileGridCollection()
+	INIT_MATCH_INFO_VARS(FindCollectionTypesEntryForCollection); // FCTEFC
+	if (machineType == IMAGE_FILE_MACHINE_AMD64)
+	{
+#if 0
+		// 26100~
+		// std::pair construction inlined
+		// 48 8D 4D ?? E8 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ??
+		//                                     ^^^^^^^^^^^ STGCInitializer      ^^^^^^^^^^^ STGC
+		// Do not include std::string ctor bytes, it was not inlined until 29553 requiring another pattern if we need to cover
+		// Ref: WindowsInternal::Shell::UnifiedTile::CuratedTileCollections::`dynamic initializer for 'CollectionTypesMap''
+		usingPatternFindCollectionTypesEntryForCollection = 1;
+		matchFindCollectionTypesEntryForCollection = (PBYTE)FindPattern(
+			pFile, dwSize,
+			"\x48\x8D\x4D\x00\xE8\x00\x00\x00\x00\x48\x8D\x05\x00\x00\x00\x00\x48\x89\x45\x00\x48\x8D\x05\x00\x00\x00\x00\x48\x89\x45",
+			"xxx?x????xxx????xxx?xxx????xxx",
+			&numMatchesFindCollectionTypesEntryForCollection
+		);
+		if (matchFindCollectionTypesEntryForCollection)
+		{
+			// Process here: +9 and +20
+		}
+		else
+		{
+			// 18362~
+			// std::pair construction not inlined; STGCInitalizer placed using rsp offset
+			// 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 ?? 4C 8D 44 24 ??
+			//                      ^^^^^^^^^^^ STGCInitializer         ^^^^^^^^^^^ STGC
+			// Ref: WindowsInternal::Shell::UnifiedTile::CuratedTileCollections::`dynamic initializer for 'CollectionTypesMap''
+			usingPatternFindCollectionTypesEntryForCollection = 2;
+			matchFindCollectionTypesEntryForCollection = (PBYTE)FindPattern(
+				pFile, dwSize,
+				"\x48\x89\x45\x00\x48\x8D\x05\x00\x00\x00\x00\x48\x89\x44\x24\x00\x48\x8D\x05\x00\x00\x00\x00\x48\x89\x44\x24\x00\x4C\x8D\x44\x24",
+				"xxx?xxx????xxxx?xxx????xxxx?xxxx",
+				&numMatchesFindCollectionTypesEntryForCollection
+			);
+			if (matchFindCollectionTypesEntryForCollection)
+			{
+				// Process here: +4 and +16
+			}
+			else // !!! (Please comment this outside the suite, we're not patching 16299 ctc) !!!
+			{
+				// 16299~
+				// std::pair construction not inlined; STGCInitalizer placed using rbp offset
+				// 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 4C 8D 45 ??
+				//                      ^^^^^^^^^^^ STGCInitializer         ^^^^^^^^^^^ STGC
+				// Ref: WindowsInternal::Shell::UnifiedTile::CuratedTileCollections::`dynamic initializer for 'CollectionTypesMap''
+				usingPatternFindCollectionTypesEntryForCollection = 3;
+				matchFindCollectionTypesEntryForCollection = (PBYTE)FindPattern(
+					pFile, dwSize,
+					"\x48\x89\x45\x00\x48\x8D\x05\x00\x00\x00\x00\x48\x89\x45\x00\x48\x8D\x05\x00\x00\x00\x00\x48\x89\x45\x00\x4C\x8D\x45",
+					"xxx?xxx????xxx?xxx????xxx?xxx",
+					&numMatchesFindCollectionTypesEntryForCollection
+				);
+				if (matchFindCollectionTypesEntryForCollection)
+				{
+					// Process here: +4 and +15
+				}
+			}
+		}
+#endif
+
+		// 49 8B D6 48 8D 4D ?? E8 ?? ?? ?? ?? 48 8B C8 E8 ?? ?? ?? ?? 48 85 C0
+		//                                                 ^^^^^^^^^^^
+		// Ref: ctc::CuratedTileCollectionManager::GetCollectionForCollectionName()
+		matchFindCollectionTypesEntryForCollection = (PBYTE)FindPattern(
+			pFile, dwSize,
+			"\x49\x8B\xD6\x48\x8D\x4D\x00\xE8\x00\x00\x00\x00\x48\x8B\xC8\xE8\x00\x00\x00\x00\x48\x85\xC0",
+			"xxxxxx?2x????xxxx????xxx",
+			&numMatchesFindCollectionTypesEntryForCollection
+		);
+		if (matchFindCollectionTypesEntryForCollection)
+		{
+			matchFindCollectionTypesEntryForCollection += 15;
+			matchFindCollectionTypesEntryForCollection += 5 + *(int*)(matchFindCollectionTypesEntryForCollection + 1);
+		}
+	}
+	else if (machineType == IMAGE_FILE_MACHINE_ARM64)
+	{
+		// If we're looking for both Create_ functions directly, which are referenced in the dynamic initializer,
+		// unfortunately the code in it is too fragile (very dynamic std::string and std::map inlining). So we need to
+		// use a more stable method
+
+		// FD 7B ?? A9 FD 03 00 91 ?? 03 00 AA ?? 03 01 AA E1 03 02 AA E0 ?? 00 91 ?? ?? ?? ?? ?? ?? ?? ??
+		//                                                                                     ^^^^^^^^^^^
+		// Ref: ctc::CuratedTileCollectionManager::GetInitializerForCollectionName()
+		matchFindCollectionTypesEntryForCollection = (PBYTE)FindPatternBitMask_4_(
+			pFile, dwSize,
+			"\xFD\x7B\x00\xA9\xFD\x03\x00\x91\x00\x03\x00\xAA\x00\x03\x01\xAA\xE1\x03\x02\xAA\xE0\x00\x00\x91\x00\x00\x00\x94\x00\x00\x00\x94",
+			"\xFF\xFF\x00\xFF\xFF\xFF\xFF\xFF\x00\xFF\xFF\xFF\x00\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x00\xFF\xFF\x00\x00\x00\xFC\x00\x00\x00\xFC",
+			32,
+			&numMatchesFindCollectionTypesEntryForCollection
+		);
+		if (matchFindCollectionTypesEntryForCollection)
+		{
+			matchFindCollectionTypesEntryForCollection += 28;
+			matchFindCollectionTypesEntryForCollection = (PBYTE)ARM64_FollowBL((DWORD*)matchFindCollectionTypesEntryForCollection);
+		}
+	}
+	PUBLISH_MATCH_INFO(FindCollectionTypesEntryForCollection);
 
 	// === END 26xxx.8474 BREAKAGE FIX ===
 }
