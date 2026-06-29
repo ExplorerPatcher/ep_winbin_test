@@ -715,7 +715,7 @@ void CPatternCheckerSuiteModule_StartTileData::CheckPatterns(PBYTE pFileRaw, DWO
 		matchFindCollectionTypesEntryForCollection = (PBYTE)FindPattern(
 			pFile, dwSize,
 			"\x49\x8B\xD6\x48\x8D\x4D\x00\xE8\x00\x00\x00\x00\x48\x8B\xC8\xE8\x00\x00\x00\x00\x48\x85\xC0",
-			"xxxxxx?2x????xxxx????xxx",
+			"xxxxxx?x????xxxx????xxx",
 			&numMatchesFindCollectionTypesEntryForCollection
 		);
 		if (matchFindCollectionTypesEntryForCollection)
