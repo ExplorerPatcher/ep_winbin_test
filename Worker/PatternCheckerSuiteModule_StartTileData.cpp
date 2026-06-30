@@ -12,6 +12,7 @@ const CPatternCheckerSuiteModule_Base::ElementDef CPatternCheckerSuiteModule_Sta
 	{ L"MAIOT_W8LMPP", L"MakeAndInitializeOrThrow_Win8LayoutMigrationPostProcessor" },
 	{ L"LATA1", L"LogAllTilesActivity_Dtor" },
 	{ L"FCTEFC", L"FindCollectionTypesEntryForCollection" },
+	{ L"CTIW", L"ConcurrencyTaskImplWait" },
 };
 
 CPatternCheckerSuiteModule_StartTileData::CPatternCheckerSuiteModule_StartTileData()
@@ -657,7 +658,7 @@ void CPatternCheckerSuiteModule_StartTileData::CheckPatterns(PBYTE pFileRaw, DWO
 		// 48 8D 4D ?? E8 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ??
 		//                                     ^^^^^^^^^^^ STGCInitializer      ^^^^^^^^^^^ STGC
 		// Do not include std::string ctor bytes, it was not inlined until 29553 requiring another pattern if we need to cover
-		// Ref: WindowsInternal::Shell::UnifiedTile::CuratedTileCollections::`dynamic initializer for 'CollectionTypesMap''
+		// Ref: ctc::`dynamic initializer for 'CollectionTypesMap''
 		usingPatternFindCollectionTypesEntryForCollection = 1;
 		matchFindCollectionTypesEntryForCollection = (PBYTE)FindPattern(
 			pFile, dwSize,
@@ -675,7 +676,7 @@ void CPatternCheckerSuiteModule_StartTileData::CheckPatterns(PBYTE pFileRaw, DWO
 			// std::pair construction not inlined; STGCInitalizer placed using rsp offset
 			// 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 ?? 4C 8D 44 24 ??
 			//                      ^^^^^^^^^^^ STGCInitializer         ^^^^^^^^^^^ STGC
-			// Ref: WindowsInternal::Shell::UnifiedTile::CuratedTileCollections::`dynamic initializer for 'CollectionTypesMap''
+			// Ref: ctc::`dynamic initializer for 'CollectionTypesMap''
 			usingPatternFindCollectionTypesEntryForCollection = 2;
 			matchFindCollectionTypesEntryForCollection = (PBYTE)FindPattern(
 				pFile, dwSize,
@@ -693,7 +694,7 @@ void CPatternCheckerSuiteModule_StartTileData::CheckPatterns(PBYTE pFileRaw, DWO
 				// std::pair construction not inlined; STGCInitalizer placed using rbp offset
 				// 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 4C 8D 45 ??
 				//                      ^^^^^^^^^^^ STGCInitializer         ^^^^^^^^^^^ STGC
-				// Ref: WindowsInternal::Shell::UnifiedTile::CuratedTileCollections::`dynamic initializer for 'CollectionTypesMap''
+				// Ref: ctc::`dynamic initializer for 'CollectionTypesMap''
 				usingPatternFindCollectionTypesEntryForCollection = 3;
 				matchFindCollectionTypesEntryForCollection = (PBYTE)FindPattern(
 					pFile, dwSize,
@@ -709,13 +710,13 @@ void CPatternCheckerSuiteModule_StartTileData::CheckPatterns(PBYTE pFileRaw, DWO
 		}
 #endif
 
-		// 49 8B D6 48 8D 4D ?? E8 ?? ?? ?? ?? 48 8B C8 E8 ?? ?? ?? ?? 48 85 C0
+		// 49 8B ?? 48 8D 4D ?? E8 ?? ?? ?? ?? 48 8B C8 E8 ?? ?? ?? ?? 48 85 C0
 		//                                                 ^^^^^^^^^^^
 		// Ref: ctc::CuratedTileCollectionManager::GetCollectionForCollectionName()
 		matchFindCollectionTypesEntryForCollection = (PBYTE)FindPattern(
 			pFile, dwSize,
-			"\x49\x8B\xD6\x48\x8D\x4D\x00\xE8\x00\x00\x00\x00\x48\x8B\xC8\xE8\x00\x00\x00\x00\x48\x85\xC0",
-			"xxxxxx?x????xxxx????xxx",
+			"\x49\x8B\x00\x48\x8D\x4D\x00\xE8\x00\x00\x00\x00\x48\x8B\xC8\xE8\x00\x00\x00\x00\x48\x85\xC0",
+			"xx?xxx?x????xxxx????xxx",
 			&numMatchesFindCollectionTypesEntryForCollection
 		);
 		if (matchFindCollectionTypesEntryForCollection)
@@ -747,6 +748,47 @@ void CPatternCheckerSuiteModule_StartTileData::CheckPatterns(PBYTE pFileRaw, DWO
 		}
 	}
 	PUBLISH_MATCH_INFO(FindCollectionTypesEntryForCollection);
+
+	// Concurrency::details::_Task_impl_base::_Wait()
+	INIT_MATCH_INFO_VARS(ConcurrencyTaskImplWait); // CTIW
+	if (machineType == IMAGE_FILE_MACHINE_AMD64)
+	{
+		// 16299~
+		// 45 85 C0 78 ?? 48 8B 49 08 48 85 C9 75 06 E8 ?? ?? ?? ?? CC E8 ?? ?? ?? ??
+		//                                                                ^^^^^^^^^^^
+		// Ref: ctc::TransformerHelpers::BatchAction()
+		//      -> MakeAsyncAction() lambda
+		matchConcurrencyTaskImplWait = (PBYTE)FindPattern(
+			pFile, dwSize,
+			"\x45\x85\xC0\x78\x00\x48\x8B\x49\x08\x48\x85\xC9\x75\x06\xE8\x00\x00\x00\x00\xCC\xE8",
+			"xxxx?xxxxxxxxxx????xx",
+			&numMatchesConcurrencyTaskImplWait
+		);
+		if (matchConcurrencyTaskImplWait)
+		{
+			matchConcurrencyTaskImplWait += 20;
+			matchConcurrencyTaskImplWait += 5 + *(int*)(matchConcurrencyTaskImplWait + 1);
+		}
+	}
+	else if (machineType == IMAGE_FILE_MACHINE_ARM64)
+	{
+		// C2 00 F8 37 00 04 40 F9 40 00 00 B5 ?? ?? ?? ?? ?? ?? ?? ?? 02 00 80 52
+		//                                                 ^^^^^^^^^^^
+		// Ref: ctc::TransformerHelpers::BatchAction()
+		//      -> MakeAsyncAction() lambda
+		matchConcurrencyTaskImplWait = (PBYTE)FindPattern_4_(
+			pFile, dwSize,
+			"\xC2\x00\xF8\x37\x00\x04\x40\xF9\x40\x00\x00\xB5\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x80\x52",
+			"xxxxxxxxxxxx????????xxxx",
+			&numMatchesConcurrencyTaskImplWait
+		);
+		if (matchConcurrencyTaskImplWait)
+		{
+			matchConcurrencyTaskImplWait += 16;
+			matchConcurrencyTaskImplWait = (PBYTE)ARM64_FollowBL((DWORD*)matchConcurrencyTaskImplWait);
+		}
+	}
+	PUBLISH_MATCH_INFO(ConcurrencyTaskImplWait);
 
 	// === END 26xxx.8474 BREAKAGE FIX ===
 }
