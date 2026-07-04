@@ -75,17 +75,19 @@ CPatternCheckerSuiteModule_StartTileData::CPatternCheckerSuiteModule_StartTileDa
 	} \
 	while (false)
 
-#define FIND_PATTERN_WITH_GAP_4_(pFile, dwSize, pat1, msk1, siz1, gap1and2, pat2, msk2, siz2, postprocess, dest, numMatches) \
+// ALL pointers and sizes must be multiples of 4
+#define FIND_PATTERN_WITH_GAP_ARM(pFile, dwSize, pat1, msk1, siz1, gap1and2, pat2, msk2, siz2, postprocess, dest, numMatches) \
 	do \
 	{ \
 		PBYTE pCurrent = (pFile); \
 		while (pCurrent + (siz1) + (gap1and2) + (siz2) < (pFile) + (dwSize)) \
 		{ \
-			PBYTE matchLocal = (PBYTE)FindPattern_4_( \
+			PBYTE matchLocal = (PBYTE)FindPatternBitMask_4_( \
 				pCurrent, \
 				(SIZE_T)(dwSize) - (SIZE_T)(pCurrent - (SIZE_T)(pFile)), \
 				(pat1), \
 				(msk1), \
+				(siz1), \
 				nullptr \
 			); \
 			if (!matchLocal) \
@@ -102,11 +104,12 @@ CPatternCheckerSuiteModule_StartTileData::CPatternCheckerSuiteModule_StartTileDa
 			} \
  			\
 			/* Check continuation */ \
-			PBYTE matchContinuationTest = (PBYTE)FindPattern_4_( \
+			PBYTE matchContinuationTest = (PBYTE)FindPatternBitMask_4_( \
 				pCurrent, \
 				(gap1and2) + (siz2), \
 				(pat2), \
 				(msk2), \
+				(siz2), \
 				nullptr \
 			); \
 			if (!matchContinuationTest) \
@@ -310,24 +313,33 @@ void CPatternCheckerSuiteModule_StartTileData::CheckPatterns(PBYTE pFileRaw, DWO
 			// - GetCDSStartCollectionWriter() inlined (20348 ~ 25398)
 			// ?? 42 00 91 ?? ?? ?? ?? ?? 03 00 2A ... ?? 02 00 F9 28 00 80 52
 			//             ^^^^^^^^^^^
+			// ADD X0, X??, #0x10
+			//   P: 0b10010001_00_000000010000_?????_00000 = 91004000 = 00 40 00 91
+			//   M: 0b11111111_11_111111111111_00000_11111 = FFFFFC1F = 1F FC FF FF
+			// ORR W??, WZR, W0 (MOV W??, W0)
+			//   P: 0b00101010_00_0_00000_000000_11111_????? = 2A0003E0 = E0 03 00 2A
+			//   M: 0b11111111_11_1_11111_111111_11111_00000 = FFFFFFE0 = E0 FF FF FF
+			// STR XZR, [X??]
+			//   P: 0b1111100100_000000000000_?????_11111 = F900001F = 1F 00 00 F9
+			//   M: 0b1111111111_111111111111_00000_11111 = FFFFFC1F = 1F FC FF FF
 			// Ref: ctc::StartTileGridCollectionInitializer::CreateStartCollectionPipeline()
 			usingPatternGetCDSStartCollectionWriter = 2;
-			FIND_PATTERN_WITH_GAP( // todo _4_
+			FIND_PATTERN_WITH_GAP_ARM(
 				pFile, dwSize,
 
-				"\x42\x00\x91\x00\x00\x00\x00\x00\x03\x00\x2A",
-				"xxx?????xxx",
-				11,
+				"\x00\x40\x00\x91\x00\x00\x00\x94\xE0\x03\x00\x2A",
+				"\x1F\xFC\xFF\xFF\x00\x00\x00\xFC\xE0\xFF\xFF\xFF",
+				12,
 
-				49,
+				44,
 
-				"\x02\x00\xF9\x28\x00\x80\x52",
-				"xxxxxxx",
-				7,
+				"\x1F\x00\x00\xF9\x28\x00\x80\x52",
+				"\x1F\xFC\xFF\xFF\xFF\xFF\xFF\xFF",
+				8,
 
 				[&](PBYTE matchCandidate) -> PBYTE
 				{
-					matchCandidate += 3;
+					matchCandidate += 4;
 					return (PBYTE)ARM64_FollowBL((DWORD*)matchCandidate);
 				},
 
