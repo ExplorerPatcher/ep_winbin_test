@@ -1376,6 +1376,8 @@ LIMIT 1;", _connection))
         {
             switch (status)
             {
+                case 3:
+                    return "⚫";
                 case 2:
                     return "🟢";
                 case 1:
